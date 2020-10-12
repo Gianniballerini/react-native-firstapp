@@ -1,67 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { AppLoading } from 'expo';
+import { Container } from 'native-base';
+import Navigator from './routes/homeStack.js'
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
-  const [pokemonData, setPokemonData] = useState([])
-  const [selectedId, setSelectedId] = useState(null);
+  const [isReady, setIsReady] = useState(null)
+  useEffect(() => {
+    fetchFonts()
+  }, []) // empty [] to only make this on load
 
-  async function fetchPokemonData() {
-    try {
-      const response = await fetch('https://pokeapi.co/api/v2/pokemon/?limit=60')
-      let json = await response.json()
-      console.log(json.results)
-      setPokemonData(json.results)
-    } catch(error) {
-      console.error(error);
-    }
+  async function fetchFonts() {
+    await Font.loadAsync({
+      Roboto: require('native-base/Fonts/Roboto.ttf'),
+      Roboto_medium: require('native-base/Fonts/Roboto_medium.ttf'),
+      ...Ionicons.font,
+    });
+    setIsReady(true)
   }
 
-  const Item = ({ item, onPress, style }) => (
-    <TouchableOpacity onPress={onPress} style={[styles.item, style]}>
-      <Text style={styles.title}>{item.name}</Text>
-    </TouchableOpacity>
-  );
-
-  const renderItem = ({ item }) => {
-    const backgroundColor = item.name === selectedId ? "#6e3b6e" : "#f9c2ff";
-    return (
-      <Item
-        item={item}
-        onPress={() => setSelectedId(item.name)}
-        style={{ backgroundColor }}
-      />
-    );
-  };
-
-  
-
-  useEffect(() => {
-    ()  => fetchPokemonData();
-  })
-
+  if (!isReady) {
+    return <AppLoading />;
+  }
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={pokemonData}
-        renderItem={renderItem}
-        keyExtractor={item => item.name}
-        extraData={selectedId}
-      />
-    </SafeAreaView>
+    <Navigator />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
-  },
-  item: {
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  title: {
-    fontSize: 32,
-  },
-});
