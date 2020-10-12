@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { StatusBar, StyleSheet } from "react-native";
+import { StatusBar, StyleSheet, Image } from "react-native";
 import { Card, CardItem, Body, Text, Container } from 'native-base';
 import { AppLoading } from 'expo'
 
-export default function PokemonDetail({ navigation }) {
+const PokemonDetail = ({ navigation }) => {
     const [isReady, setIsReady] = useState(null)
     const [pokemonData, setPokemonData] = useState([])
     useEffect(() => {
         fetchPokemonData(navigation.state.params.item.name)
     }, []) // empty [] to only make this on load
 
-    async function fetchPokemonData(name) {
+    const fetchPokemonData = async (name) => {
         try {
             const response = await fetch('https://pokeapi.co/api/v2/pokemon/' + name)
             let json = await response.json()
@@ -47,23 +47,31 @@ export default function PokemonDetail({ navigation }) {
 
     if (!isReady) {
         return <AppLoading />;
+    }else{
+        let color = getColorByType(pokemonData.types[0].type.name)
+        let imgUri = pokemonData.sprites.front_default
+        console.log(imgUri)
+        return (
+            <Container>
+                <StatusBar backgroundColor={color} />
+                <Card>
+                    <CardItem>
+                        <Body>
+                            <Text style={styles.title}>{pokemonData.name}</Text>
+                            {pokemonData.types.map(item => {
+                                return <Text key={item.slot}>{item.type.name}</Text>
+                            })}
+                        </Body>
+                    </CardItem>
+                    <CardItem>
+                        <Body>
+                            <Image source={{uri: imgUri}} style={{width: 200, height: 200}} />
+                        </Body>
+                    </CardItem>
+                </Card>
+            </Container>
+        );
     }
-    let color = getColorByType(pokemonData.types[0].type.name)
-    return (
-        <Container>
-            <StatusBar backgroundColor={color} />
-            <Card>
-                <CardItem>
-                    <Body>
-                        <Text style={styles.title}>{pokemonData.name}</Text>
-                        {pokemonData.types.map(item => {
-                            return <Text key={item.slot}>{item.type.name}</Text>
-                        })}
-                    </Body>
-                </CardItem>
-            </Card>
-        </Container>
-    );
 }
 
 const styles = StyleSheet.create({
@@ -71,3 +79,5 @@ const styles = StyleSheet.create({
         fontSize: 32,
     },
 });
+
+export default PokemonDetail
